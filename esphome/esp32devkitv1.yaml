@@ -1,0 +1,163 @@
+esphome:
+  name: esp32devkitv1
+
+
+esp32:
+  board: esp32doit-devkit-v1
+  framework:
+    type: arduino
+
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  fast_connect: true
+  manual_ip:
+    static_ip: 192.168.1.121
+    gateway: 192.168.1.1
+    subnet: 255.255.255.0
+    
+logger:
+  
+api:
+  services:
+    - service: update_nextion
+      then:
+        - lambda: 'id(nextion1)->upload_tft();'
+
+
+ota:
+  password: !secret ota_password
+  id: devkitv1
+captive_portal:  
+web_server:
+  port: 80
+  auth:
+    username: admin
+    password: !secret webservpass
+  
+  
+sensor:
+  - platform: wifi_signal
+    name: "nextion_ssi"
+    update_interval: 600s  
+
+  - platform: homeassistant
+    id: current_temperature
+    entity_id: sensor.glances_ambient_temperature
+#    attribute: current_temperature
+
+  - platform: homeassistant
+    id: set_temperature
+    entity_id: sensor.tslider
+#    attribute: current_temperature
+    
+
+  - platform: nextion
+    name: "tslider"
+    component_name: page1.tslider # pageX.humidity for a global
+    update_interval: 1s
+
+ # - platform: nextion
+ #   id: current_page
+ #   name: "current_page"
+ #   variable_name: dp
+ #   update_interval: 10s   
+
+
+
+text_sensor:
+  - platform: wifi_info
+    ip_address:
+      name: nextion IP Address
+    ssid:
+      name: nextion Connected SSID
+    bssid:
+      name: nextion Connected BSSID
+    mac_address:
+      name: nextion Mac Wifi Address
+    scan_results:
+      name: nextion Latest Scan Results
+      
+      
+#  - platform: homeassistant
+#    id: current_temperature
+#    entity_id: sensor.glances_ambient_temperature
+#    attribute: current_temperature
+
+time:
+  - platform: homeassistant
+    id: esptime       
+      
+      
+      
+uart:
+  id: uart_2
+  rx_pin: 18
+  tx_pin: 19
+  baud_rate: 9600
+
+
+display:
+  - platform: nextion
+    id: nextion1
+    uart_id: uart_2
+    tft_url: 'http://192.168.1.117:8123/local/haos.tft'    
+ #   update_interval: 1s
+    lambda: |-
+
+
+              auto time_text = id(esptime).now().strftime("%H:%M");
+              id(nextion1).set_component_text("page0.t2", time_text.c_str());
+              id(nextion1).set_component_text("page1.t2", time_text.c_str());    
+              id(nextion1).set_component_text_printf("page1.temp1", "%.1fc", id(current_temperature).state);
+              id(nextion1).set_component_text_printf("page1.temp3", "%.1fc", id(set_temperature).state);              
+              
+          #      id(nextion1).set_component_text("page1.temp1", id(current_temperature).state.c_str());          
+      
+
+switch:
+  - platform: nextion
+    id: cool_switch
+    name: "cool switch"
+    component_name: page1.cool # pageX.r0 for a global
+    update_interval: 4s
+  - platform: nextion
+    id: dry_switch
+    name: "dry Switch"
+    component_name: page1.dry # pageX.r0 for a global
+    update_interval: 4s
+  - platform: nextion
+    id: heat_switch
+    name: "heat Switch"
+    component_name: page1.heat # pageX.r0 for a global
+    update_interval: 4s
+  - platform: nextion
+    id: fan_switch
+    name: "fan Switch"
+    component_name: page1.fan # pageX.r0 for a global
+    update_interval: 4s
+  - platform: nextion
+    id: power_switch
+    name: "power Switch"
+    component_name: page1.acpower # pageX.r0 for a global
+    update_interval: 4s    
+  - platform: nextion
+    id: clight_switch
+    name: "clight switch"
+    component_name: page0.chrislight # pageX.r0 for a global
+    update_interval: 4s
+  - platform: nextion
+    id: cplug_switch
+    name: "cplug Switch"
+    component_name: page0.chrisplug # pageX.r0 for a global
+    update_interval: 4s     
+ 
+      
+      
+      
+      
+      
+      
+      
+      
