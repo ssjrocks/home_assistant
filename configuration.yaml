@@ -71,9 +71,6 @@ sensor:
   - platform: openhardwaremonitor
     host: 192.168.1.105
 
-
-
-
 utility_meter:
   daily_energy:
     source: sensor.electricity_total
@@ -85,11 +82,6 @@ utility_meter:
     name: Monthly Energy
     cycle: monthly
 
-
-
-
-
-
 # Example configuration.yaml entry.
 # Shows device_tracker.demo_paulus on a map.
 camera:
@@ -97,12 +89,6 @@ camera:
   platform: generic
   still_image_url: https://maps.googleapis.com/maps/api/staticmap?center={{ state_attr('device_tracker.smg975f', 'latitude') }},{{ state_attr('device_tracker.smg975f', 'longitude') }}&zoom=16&size=500x500&maptype=roadmap&layer=t&markers=color:blue%7Clabel:Chris%7C{{ state_attr('device_tracker.smg975f', 'latitude') }},{{ state_attr('device_tracker.smg975f', 'longitude') }}&key=AIzaSyCdWE1FTtUm6UCEB1TUV1Ex74SF3ZAdn3w
   limit_refetch_to_url_change: true
-
-
-
-
-
-
 
 
 template:
@@ -122,9 +108,6 @@ template:
         state: >
                  {{(states('sensor.Daily_Energy')|float*0.20178 )| round(2)}}
 
-
-
-
 notify:
   - name: ga_broadcast
     platform: rest
@@ -138,8 +121,6 @@ input_boolean:
     name: Camera1 - Motion detected
     icon: mdi:eye
 
-
-
 binary_sensor:
   - platform: template
     sensors:
@@ -147,12 +128,6 @@ binary_sensor:
         friendly_name: "Camera - Movement"
         device_class: motion
         value_template: "{{ is_state('input_boolean.camera1_motion_detected', 'on') }}"
-
-
-
-
-
-
 
 climate:
   - platform: tasmota_irhvac
@@ -165,7 +140,7 @@ climate:
     max_temp: 30 #optional - default 32 int value
     target_temp: 26 #optional - default 26 int value
     initial_operation_mode: "off" # optional - default "off" string value
-   # away_temp: 24 #optional - default 24 int value
+   #   away_temp: 24 #optional - default 24 int value
     precision: 1.0 #optional - default 1.0 float value
 
     supported_modes:
@@ -191,9 +166,9 @@ climate:
      # - horizontal # Left to right - remove if your AC does not support it
      # - both # remove if your AC does not support horizontal
 
-    hvac_model: "1" # string value
-    celsius_mode: "On" #optional - default "On" string value - you can remove it if you use celsius
-    default_light_mode: "On" #optional - default "Off" string value
+    hvac_model: "1"   # string value
+    celsius_mode: "On"   #optional - default "On" string value - you can remove it if you use celsius
+    default_light_mode: "On"   #optional - default "Off" string value
     default_beep_mode: "Off"
 
 switch:
@@ -229,7 +204,6 @@ switch:
             entity_id: climate.aircon
             beep: 'off'
 
-
   - platform: template
     switches:
       chrislight:
@@ -256,15 +230,6 @@ switch:
            data:
             message: "Turn my light off"
 
-
-
-
-
-
-
-
-
-
 image_processing:
   - platform: deepstack_face
     ip_address: 192.168.1.105
@@ -280,11 +245,6 @@ image_processing:
     source:
       - entity_id: camera.local_file
         name: face_counter
-
-
-
-
-
 
 rest_command:
   assistant_broadcast:
@@ -304,20 +264,3 @@ rest_command:
     method: POST
     content_type: 'application/json'
     payload: '{"command":"{{ command }}", "user":"username"}'
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
