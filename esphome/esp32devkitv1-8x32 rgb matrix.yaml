@@ -1,0 +1,237 @@
+esphome:
+  name: esp32doit-devkit
+
+esp32:
+  board: esp32doit-devkit-v1
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+  password: "4deba658ae3c73d840e14239e6e5774a"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Esp32Doit-Devkit"
+    password: "a80Gh9WQnQkI"
+
+captive_portal:
+light:
+  - platform: fastled_clockless
+    chipset: WS2812B
+    pin: 32
+    num_leds: 256
+    rgb_order: GRB
+    name: "led_matrix"
+    id: led_matrix_32x8
+    default_transition_length: 0s
+    color_correct: [50%, 50%, 50%]
+    restore_mode: ALWAYS_OFF
+    effects:
+      - strobe:
+      - strobe:
+          name: Strobe Effect With Custom Values
+          colors:
+            - state: true
+              brightness: 100%
+              red: 100%
+              green: 90%
+              blue: 0%
+              duration: 500ms
+            - state: false
+              duration: 250ms
+            - state: true
+              brightness: 100%
+              red: 0%
+              green: 100%
+              blue: 0%
+              duration: 500ms
+              
+              
+      - addressable_color_wipe:
+      - addressable_color_wipe:
+          name: Color Wipe Effect With Custom Values
+          colors:
+            - red: 100%
+              green: 100%
+              blue: 100%
+              num_leds: 1
+            - red: 0%
+              green: 0%
+              blue: 0%
+              num_leds: 1
+          add_led_interval: 100ms
+          reverse: false          
+              
+      - addressable_fireworks:
+      - addressable_fireworks:
+          name: Fireworks Effect With Custom Values
+          update_interval: 32ms
+          spark_probability: 10%
+          use_random_color: false
+          fade_out_rate: 120    
+          
+      - addressable_flicker:
+      - addressable_flicker:
+          name: Flicker Effect With Custom Values
+          update_interval: 16ms
+          intensity: 5%    
+          
+      - addressable_scan:
+      - addressable_scan:
+          name: Scan Effect With Custom Values
+          move_interval: 10ms
+          scan_width: 1
+          
+          
+      - addressable_rainbow:
+      - addressable_rainbow:
+          name: Rainbow Effect With Custom Values
+          speed: 30
+          width: 50     
+      
+      - random:
+      - random:
+          name: Random Effect With Custom Values
+          transition_length: 5s
+          update_interval: 7s
+          
+      - pulse:
+      - pulse:
+          name: "Fast Pulse"
+          transition_length: 0.5s
+          update_interval: 0.5s
+      - pulse:
+          name: "Slow Pulse"
+          # transition_length: 1s      # defaults to 1s
+          update_interval: 2s
+      
+      - random:
+          name: "My Slow Random Effect"
+          transition_length: 30s
+          update_interval: 30s
+      - random:
+          name: "My Fast Random Effect"
+          transition_length: 4s
+          update_interval: 5s
+      
+          
+      - lambda:
+          name: My Custom Effect
+          update_interval: 1s
+          lambda: |-
+            static int state = 0;
+            auto call = id(led_matrix_32x8).turn_on();
+            // Transition of 1000ms = 1s
+            call.set_transition_length(1000);
+            if (state == 0) {
+              call.set_rgb(1.0, 1.0, 1.0);
+            } else if (state == 1) {
+              call.set_rgb(1.0, 0.0, 1.0);
+            } else if (state == 2) {
+              call.set_rgb(0.0, 0.0, 1.0);
+            } else {
+              call.set_rgb(1.0, 0.0, 0.0);
+            }
+            call.perform();
+            state += 1;
+            if (state == 4)
+              state = 0;    
+          
+          
+              
+#font:
+# - file: "arial.ttf"
+#    id: my_font
+#    size: 8
+#    glyphs:  ['&', '@', '!', ',', '.', '"', '%', '(', ')', '+', '-', '_', ':', '°', '0',
+#       '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E',
+#       'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S',
+#       'T', 'U', 'V', 'W', 'X', 'Y', 'Z', ' ', 'a', 'b', 'c', 'd', 'e', 'f',
+ #      'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
+#       'u', 'v', 'w', 'x', 'y', 'z','å', 'ä', 'ö', '/', '$']
+
+color:
+  - id: my_red
+    red: 100%
+    green: 0%
+    blue: 0%
+  - id: my_green
+    red: 0%
+    green: 100%
+    blue: 0%
+  - id: my_blue
+    red: 0%
+    green: 0%
+    blue: 100%
+  - id: my_yellow
+    red: 100%
+    green: 100%
+    blue: 0%
+  - id: my_white
+    red: 100%
+    green: 100%
+    blue: 100%    
+    
+  - id: my_aqua
+    red: 0%
+    green: 100%
+    blue: 100%     
+    
+  - id: my_cool
+    red: 56%
+    green: 100%
+    blue: 98%      
+    
+  - id: my_purple
+    red: 33%
+    green: 10%
+    blue: 55% 
+#display:
+ # - platform: addressable_light
+#    id: led_matrix_32x8_display
+#    addressable_light_id: led_matrix_32x8
+#    width: 32
+#    height: 8
+#    pixel_mapper: |-
+#      if (x % 2 == 0) {
+##        return (x * 8) + y;
+#      }
+#      return (x * 8) + (7 - y);
+#    rotation: 0°
+#    update_interval: 250ms
+#    lambda: |-
+#          // Draw a bulls-eye pattern#
+
+#          it.rectangle(0, 0, 8, 8, my_red);
+#          it.rectangle(1, 1, 6, 6, my_green);
+#          it.rectangle(2, 2, 4, 4, my_blue);
+#          it.rectangle(3, 3, 2, 2, my_red);
+#          
+#          it.rectangle(8, 0, 8, 8, my_purple);
+#          it.rectangle(9, 1, 6, 6, my_red);          
+#          it.rectangle(10, 2, 4, 4, my_green);
+#          it.rectangle(11, 3, 2, 2, my_blue);\
+          
+ #         it.rectangle(16, 0, 8, 8, my_white);
+  #        it.rectangle(17, 1, 6, 6, my_aqua);          
+   #       it.rectangle(18, 2, 4, 4, my_green);
+    #      it.rectangle(19, 3, 2, 2, my_yellow);          
+          
+#          it.rectangle(23, 0, 8, 8, my_green);
+ #         it.rectangle(24, 1, 6, 6, my_white);          
+  #        it.rectangle(25, 2, 4, 4, my_red);
+   #       it.rectangle(26, 3, 2, 2, my_purple);          
+          
+          
+          
+   
