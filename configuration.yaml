@@ -1,4 +1,4 @@
-  
+
 # Configure a default setup of Home Assistant (frontend, api, etc)
 default_config:
 
@@ -13,7 +13,7 @@ script: !include scripts.yaml
 scene: !include scenes.yaml
 frontend:
   themes: !include_dir_merge_named themes
-  
+
 rest:
   - resource: http://192.168.1.117:61208/api/3/all
     sensor:
@@ -67,12 +67,12 @@ sensor:
         availability_template: >-
                 {{ states("sensor.network") not in ["unknown", "unavailable", "none"] }}
         unit_of_measurement: 'MB/s'
-    
+
   - platform: openhardwaremonitor
-    host: 192.168.1.105    
-        
-        
-    
+    host: 192.168.1.105
+
+
+
 
 utility_meter:
   daily_energy:
@@ -104,7 +104,7 @@ camera:
 
 
 
-  
+
 template:
   - sensor:
       - name: "dollarstoday"
@@ -191,9 +191,9 @@ climate:
      # - horizontal # Left to right - remove if your AC does not support it
      # - both # remove if your AC does not support horizontal
 
-    hvac_model: "1" #  string value
-    celsius_mode: "On" #  optional - default "On" string value - you can remove it if you use celsius
-    default_light_mode: "On" #  optional - default "Off" string value
+    hvac_model: "1" # string value
+    celsius_mode: "On" #optional - default "On" string value - you can remove it if you use celsius
+    default_light_mode: "On" #optional - default "Off" string value
     default_beep_mode: "Off"
 
 switch:
@@ -212,7 +212,7 @@ switch:
           data:
             entity_id: climate.aircon
             light: 'off'
-  
+
   - platform: template
     switches:
       acbeep:
@@ -228,8 +228,8 @@ switch:
           data:
             entity_id: climate.aircon
             beep: 'off'
-            
-            
+
+
   - platform: template
     switches:
       chrislight:
@@ -240,11 +240,11 @@ switch:
             entity_id: switch.chrislight
   #       - service: input_boolean.toggle
    #        data:
-  #          entity_id: input_boolean.chrislight      
+  #          entity_id: input_boolean.chrislight
          - service: notify.ga_command
            data:
             message: "Turn my light on"
-     
+
         turn_off:
          - service: switch.turn_off
            target:
@@ -292,7 +292,7 @@ rest_command:
     method: POST
     content_type: 'application/json'
     payload: '{"command":"{{ command }}", "user":"username", "broadcast":true}'
-    
+
   assistant_converse:
     url: http://localhost:3000/assistant
     method: POST
