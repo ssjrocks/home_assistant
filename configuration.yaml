@@ -191,9 +191,9 @@ climate:
      # - horizontal # Left to right - remove if your AC does not support it
      # - both # remove if your AC does not support horizontal
 
-    hvac_model: "1" # string value
-    celsius_mode: "On" #optional - default "On" string value - you can remove it if you use celsius
-    default_light_mode: "On" #optional - default "Off" string value
+    hvac_model: "1" #  string value
+    celsius_mode: "On" #  optional - default "On" string value - you can remove it if you use celsius
+    default_light_mode: "On" #  optional - default "Off" string value
     default_beep_mode: "Off"
 
 switch:
