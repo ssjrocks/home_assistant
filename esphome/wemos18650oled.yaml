@@ -1,0 +1,164 @@
+esphome:
+  name: wemos18650oled
+
+esp8266:
+  board: d1_mini
+
+# Enable logging
+logger:
+#  level: VERY_VERBOSE
+
+
+# Enable Home Assistant API
+api:
+
+ota:
+  password: "5f0f41c4b9c3819005ac35e955ab7e51"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  fast_connect: true
+#  manual_ip:
+#    static_ip: 192.168.1.109
+#    gateway: 192.168.1.1
+#    subnet: 255.255.255.0
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Wemos18650Oled Fallback Hotspot"
+    password: "RTJeDqGOH0Nj"
+
+captive_portal:
+web_server:
+  port: 80
+  include_internal: true
+sensor:
+  - platform: wifi_signal
+    name: "wemos18650oled ssi"
+    id: "wemos18650oledssi"
+    update_interval: 300s
+
+  - platform: adc
+    pin: A0
+    name: wemos18650oled.battery    
+    update_interval: 300s
+    id: wemos18650oledbattery
+    device_class: battery
+    unit_of_measurement: "%"
+    accuracy_decimals: 0
+    filters:
+    - multiply: 4.611111111111
+    - calibrate_linear:
+          - 4.2 -> 100
+    #      - 4.16 -> 95
+    #      - 4.12 -> 90
+    #      - 4.07 -> 85
+    #      - 4.03 -> 80
+    #      - 3.99 -> 75
+    #      - 3.95 -> 70
+     #     - 3.91 -> 65
+    #      - 3.87 -> 60
+   #       - 3.82 -> 55
+  #        - 3.78 -> 50
+  #        - 3.74 -> 45
+ #         - 3.70 -> 40
+#          - 3.66 -> 35
+#          - 3.62 -> 30
+#          - 3.57 -> 25
+#          - 3.53 -> 20
+#          - 3.49 -> 15
+#          - 3.45 -> 10
+#          - 3.41 -> 5
+          - 2.65 -> 0  
+    
+    
+  - platform: homeassistant
+    id: elec_usage
+    entity_id: sensor.electricity_usage
+    internal: false
+
+  - platform: homeassistant
+    id: elec_cost
+    entity_id: sensor.dollarstodaydig
+    internal: false      
+
+time:
+  - platform: homeassistant
+    id: esptime    
+    
+    
+text_sensor:    
+  - platform: wifi_info
+    ip_address:
+      name: wemos18650oled IP Address
+    ssid:
+      name: wemos18650oled Connected SSID
+    bssid:
+      name: wemos18650oled Connected BSSID
+    mac_address:
+      name: wemos18650oled Mac Wifi Address
+    scan_results:
+      name: wemos18650oled Latest Scan Results
+      
+      
+
+
+
+    
+i2c:
+  sda: D1
+  scl: D2
+font:
+  - file: "arial.ttf"
+    id: my_font
+    size: 10
+    glyphs:  ['&', '@', '!', ',', '.', '"', '%', '(', ')', '+', '-', '_', ':', '°', '0',
+       '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E',
+       'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S',
+       'T', 'U', 'V', 'W', 'X', 'Y', 'Z', ' ', 'a', 'b', 'c', 'd', 'e', 'f',
+       'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
+       'u', 'v', 'w', 'x', 'y', 'z','å', 'ä', 'ö', '/', '$']
+   
+
+  
+    
+display:
+  - platform: ssd1306_i2c
+    model: "SSD1306 128x64"
+#    reset_pin: D0
+    address: 0x3C
+    lambda: |-
+      it.print(0, 0, id(my_font), "Smart Display");
+      it.strftime(0, 10, id(my_font),  "%H:%M", id(esptime).now());      
+          if (id(elec_usage).has_state()) {
+            it.printf(0, 20, id(my_font),"Power Usage %.2f KW",  id(elec_usage).state);
+            }
+            else{it.print(0, 20, id(my_font), "Power Usage no data");}
+         if (id(elec_cost).has_state()) {
+          it.printf(0, 30, id(my_font), "Power Cost $%.2f", id(elec_cost).state);
+         }
+            else{it.print(0, 30, id(my_font), "Power Cost no data");}
+        it.printf(0, 40, id(my_font), "Battery Level %.0f", id(wemos18650oledbattery).state);      
+         if (id(wemos18650oledssi).has_state()) {      
+        it.printf(0, 50, id(my_font), "Signal Level %.0f", id(wemos18650oledssi).state);      
+         }
+            else{it.print(0, 50, id(my_font), "Signal Level no data");}      
+      
+      
+#esp32_touch:
+#  setup_mode: false
+
+#binary_sensor:
+#  - platform: esp32_touch
+#    name: "ESP32 Touch Pad GPIO27"
+#    pin: GPIO27
+#    threshold: 1000
+      
+      
+      
+      
+      
+      
+      
+      
