@@ -1,0 +1,330 @@
+- alias: Motioneye - Camera1 - Motion started
+  trigger:
+    platform: webhook
+    webhook_id: motioneye-camera1-started
+  action:
+  - service: input_boolean.turn_on
+    data: {}
+    entity_id: input_boolean.camera1_motion_detected
+  id: 86f9203e62b14aafa4d05038c733a34c
+- alias: Motioneye - Camera1 - Motion ended
+  trigger:
+    platform: webhook
+    webhook_id: motioneye-camera1-ended
+  action:
+    service: input_boolean.turn_off
+    data:
+      entity_id: input_boolean.camera1_motion_detected
+  id: a4c8839d45994620b12bf8c932283907
+- id: '1641316761610'
+  alias: Send a camera snapshot when motion is detected
+  description: ''
+  use_blueprint:
+    path: vorion/send-camera-snapshot-notification-on-motion.yaml
+    input:
+      notification_message: '{{ motion_sensor_name }} detected movement!'
+      motion_sensor: binary_sensor.camera1_motion
+      camera: camera.camera1
+      notify_device: 6c14475bcdbbf2877b650ab507135c3d
+      delay: 5
+      notification_title: Motion detected!
+- id: '1641487502691'
+  alias: chris leave home notification
+  description: Chris leaving home zone notification
+  use_blueprint:
+    path: homeassistant/notify_leaving_zone.yaml
+    input:
+      notify_device: 6c14475bcdbbf2877b650ab507135c3d
+      zone_entity: zone.home
+      person_entity: person.chris
+- id: '1641487542269'
+  alias: chris leave work notification
+  description: Chris leaving work zone notification
+  use_blueprint:
+    path: homeassistant/notify_leaving_zone.yaml
+    input:
+      person_entity: person.chris
+      zone_entity: zone.chris_work
+      notify_device: 6c14475bcdbbf2877b650ab507135c3d
+- id: '1641488264073'
+  alias: chris arriving home notification
+  description: chris arriving home  zone notification
+  use_blueprint:
+    path: Sjorsa/notify-entering-zone.yaml
+    input:
+      person_entity: person.chris
+      zone_entity: zone.home
+      notify_device: 6c14475bcdbbf2877b650ab507135c3d
+- id: '1641488365342'
+  alias: chris arriving work zone notification
+  description: chris arriving work zone notification
+  use_blueprint:
+    path: Sjorsa/notify-entering-zone.yaml
+    input:
+      person_entity: person.chris
+      zone_entity: zone.chris_work
+      notify_device: 6c14475bcdbbf2877b650ab507135c3d
+- id: '1641488405225'
+  alias: mum arriving home  zone notification
+  description: mum arriving home  zone notification
+  use_blueprint:
+    path: Sjorsa/notify-entering-zone.yaml
+    input:
+      person_entity: person.mum
+      zone_entity: zone.home
+      notify_device: 6c14475bcdbbf2877b650ab507135c3d
+- id: '1641488439280'
+  alias: mum leaving home  zone notification
+  description: mum leaving home  zone notification
+  use_blueprint:
+    path: homeassistant/notify_leaving_zone.yaml
+    input:
+      person_entity: person.mum
+      zone_entity: zone.home
+      notify_device: 6c14475bcdbbf2877b650ab507135c3d
+- id: '1641488476039'
+  alias: jamie arriving home  zone notification
+  description: jamie arriving home  zone notification
+  use_blueprint:
+    path: Sjorsa/notify-entering-zone.yaml
+    input:
+      person_entity: person.jamie
+      zone_entity: zone.home
+      notify_device: 6c14475bcdbbf2877b650ab507135c3d
+- id: '1641488505020'
+  alias: jamie leaving home  zone notification
+  description: jamie leaving home  zone notification
+  use_blueprint:
+    path: homeassistant/notify_leaving_zone.yaml
+    input:
+      person_entity: person.jamie
+      zone_entity: zone.home
+      notify_device: 6c14475bcdbbf2877b650ab507135c3d
+- id: '1641488713162'
+  alias: chris camera alarm alert
+  description: ''
+  use_blueprint:
+    path: homeassistant/presence_automation.yaml
+    input:
+      person: person.chris
+      automation:
+        entity_id:
+        - automation.send_a_camera_snapshot_when_motion_is_detected
+        - automation.send_a_camera_snapshot_when_motion_is_detected
+- id: '1641629792757'
+  alias: Cast to Google Hub
+  description: ''
+  use_blueprint:
+    path: kind3r/cast-and-re-cast-a-lovelace-view-to-a-google-hub.yaml
+    input:
+      dashboard: lovelace
+      view: chromecastview
+      player: media_player.chromecastultra4714
+- id: '1642234624146'
+  alias: Notify when phone is charged
+  description: ''
+  trigger:
+  - type: battery_level
+    platform: device
+    device_id: 6c14475bcdbbf2877b650ab507135c3d
+    entity_id: sensor.sm_g975f_battery_level
+    domain: sensor
+    above: 99
+  condition:
+  - type: is_plugged_in
+    condition: device
+    device_id: 6c14475bcdbbf2877b650ab507135c3d
+    entity_id: binary_sensor.sm_g975f_is_charging
+    domain: binary_sensor
+  - condition: time
+    before: '23:59:00'
+  action:
+  - service: media_player.volume_set
+    data:
+      volume_level: 0.7
+      entity_id: media_player.nestmini8620
+  - delay: 00:00:01
+  - service: tts.google_translate_say
+    data:
+      entity_id: media_player.nestmini8620
+      message: your phone is fully charged
+  - delay: 00:00:03
+  - service: media_player.volume_set
+    data:
+      volume_level: 1
+      entity_id: media_player.nestmini8620
+  mode: single
+- id: '1642321486942'
+  alias: turn ac on via nextion
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: switch.power_switch
+    to: 'off'
+    from: 'on'
+  condition: []
+  action:
+  - service: climate.turn_off
+    target:
+      entity_id: climate.aircon
+  mode: single
+- id: '1642322421770'
+  alias: turn ac off via nextion
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: switch.power_switch
+    from: 'off'
+    to: 'on'
+  condition: []
+  action:
+  - service: climate.turn_on
+    target:
+      entity_id: climate.aircon
+  mode: single
+- id: '1642322602397'
+  alias: set ac mode to cool
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: switch.cool_switch
+    from: 'off'
+    to: 'on'
+  condition: []
+  action:
+  - service: climate.set_hvac_mode
+    data:
+      hvac_mode: cool
+    target:
+      entity_id: climate.aircon
+  - service: switch.turn_off
+    target:
+      entity_id:
+      - switch.fan_switch
+      - switch.dry_switch
+      - switch.heat_switch
+  mode: single
+- id: '1642322819065'
+  alias: set ac mode to fan only
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: switch.fan_switch
+    from: 'off'
+    to: 'on'
+  condition: []
+  action:
+  - service: climate.set_hvac_mode
+    target:
+      entity_id: climate.aircon
+    data:
+      hvac_mode: fan_only
+  - service: switch.turn_off
+    target:
+      entity_id:
+      - switch.cool_switch
+      - switch.heat_switch
+      - switch.dry_switch
+  mode: single
+- id: '1642322952564'
+  alias: set ac mode to heat
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: switch.heat_switch
+    from: 'off'
+    to: 'on'
+  condition: []
+  action:
+  - service: climate.set_hvac_mode
+    target:
+      entity_id: climate.aircon
+    data:
+      hvac_mode: heat
+  - service: switch.turn_off
+    target:
+      entity_id:
+      - switch.cool_switch
+      - switch.fan_switch
+      - switch.dry_switch
+  mode: single
+- id: '1642323034806'
+  alias: set ac mode to dry
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: switch.dry_switch
+    from: 'off'
+    to: 'on'
+  condition: []
+  action:
+  - service: climate.set_hvac_mode
+    target:
+      entity_id: climate.aircon
+    data:
+      hvac_mode: dry
+  - service: switch.turn_off
+    target:
+      entity_id:
+      - switch.cool_switch
+      - switch.heat_switch
+      - switch.fan_switch
+  mode: single
+- id: '1642327481346'
+  alias: set ac temp from nextion
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: sensor.tslider
+  condition: []
+  action:
+  - service: climate.set_temperature
+    target:
+      entity_id: climate.aircon
+    data:
+      temperature: '{{ states("sensor.tslider") }}'
+  mode: single
+- id: '1642337119955'
+  alias: set nextion cooling parameter
+  description: ''
+  trigger:
+  - platform: device
+    device_id: 60ba643773f8d23b0fb1422d6618ac73
+    domain: device_tracker
+    entity_id: device_tracker.espressif_82_a7_0c
+    type: enters
+    zone: zone.home
+  condition:
+  - condition: state
+    entity_id: climate.aircon
+    state: cooling
+    attribute: hvac_action
+  action:
+  - service: switch.turn_on
+    target:
+      entity_id:
+      - switch.power_switch
+      - switch.cool_switch
+      device_id: 60ba643773f8d23b0fb1422d6618ac73
+  mode: single
+- id: '1642337522192'
+  alias: set nextion fan parameter
+  description: ''
+  trigger:
+  - platform: device
+    device_id: 60ba643773f8d23b0fb1422d6618ac73
+    domain: device_tracker
+    entity_id: device_tracker.espressif_82_a7_0c
+    type: enters
+    zone: zone.home
+  condition:
+  - condition: state
+    entity_id: climate.aircon
+    state: fan
+    attribute: hvac_action
+  action:
+  - service: switch.turn_on
+    target:
+      entity_id: switch.power_switch
+      device_id: 60ba643773f8d23b0fb1422d6618ac73
+  mode: single
