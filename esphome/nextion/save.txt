@@ -1,0 +1,30 @@
+
+display:
+  - platform: nextion
+    id: nextion1
+    uart_id: uart_2
+    tft_url: 'http://192.168.1.117:8123/local/haos.tft'    
+    
+    lambda: |-
+
+              it.send_command_printf("page1.bt1.pic=%d", 4);
+              it.send_command_printf("page1.bt1.pic2=%d", 3);
+              auto time_text = id(esptime).now().strftime("%H:%M");
+              id(nextion1).set_component_text("page0.t2", time_text.c_str());
+              id(nextion1).set_component_text("page1.t2", time_text.c_str());    
+      
+      
+      
+
+switch:
+  - platform: nextion
+    id: r0_switch
+    name: "Radio 0 Switch"
+    component_name: page1.bt1 # pageX.r0 for a global
+    update_interval: 4s
+  - platform: nextion
+    id: darkmode
+    name: "Is Darkmode Set"
+    variable_name: darkmode      
+      
+      
