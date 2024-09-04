@@ -18,7 +18,7 @@ ota:
 
 wifi:
   ssid: WiFi-5F80-extend2
-  password: "19491912"
+  password: "*******"
   power_save_mode: none
 
 
