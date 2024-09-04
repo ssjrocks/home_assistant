@@ -1,0 +1,29 @@
+esphome:
+  name: espchip1
+  friendly_name: espchip1
+
+esp8266:
+  board: esp01_1m
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+
+ota:
+  - platform: esphome
+
+
+wifi:
+  ssid: WiFi-5F80-extend2
+  password: "19491912"
+  power_save_mode: none
+
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+
+
+captive_portal:
+    

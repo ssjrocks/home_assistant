@@ -1,0 +1,35 @@
+esphome:
+  name: freenove-esp32s3wroom
+  friendly_name: freenove esp32s3wroom
+
+esp32:
+  board: esp32-s3-devkitc-1
+  framework:
+    type: arduino
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "yWK2MrNC30Z7RkCg/CfXMTUAVMPNPvbq2cw8m7v1rHw="
+
+ota:
+  - platform: esphome
+    password: "e47f1159d131389ae0aa1e7551d0d983"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Freenove-Esp32S3Wroom"
+    password: "H1mPgIrAGyq0"
+
+captive_portal:
+
+
+
+
+    

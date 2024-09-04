@@ -1,0 +1,184 @@
+substitutions:
+  name: "ender-matrix-display"
+  friendly_name: EnderMatrix Display
+
+esphome:
+  name: ${name}
+  friendly_name: ${friendly_name}
+  min_version: 2024.6.0
+  name_add_mac_suffix: false
+  project:
+    name: esphome.web
+    version: '1.0'
+
+font: 
+  - file: fonts/MatrixLight8X.ttf
+    id: default_font
+    glyphs:  |
+      ! "#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz°
+    size: 8
+
+esp8266:
+  board: esp01_1m
+
+# Enable logging
+logger:
+  level: DEBUG
+  logs:
+    component: ERROR
+# Enable Home Assistant API
+api:
+
+# Allow Over-The-Air updates
+ota:
+  - platform: esphome
+
+# Allow provisioning Wi-Fi via serial
+wifi:
+  ssid: WiFi-5F80-extend2
+  password: "19491912"
+  power_save_mode: none
+  manual_ip:
+    static_ip: 192.168.1.250
+    gateway: 192.168.1.1
+    subnet: 255.255.255.0
+    dns1: 192.168.1.1 
+    dns2: 8.8.8.8
+  ap: {}
+
+# In combination with the `ap` this allows the user
+# to provision wifi credentials to the device via WiFi AP.
+captive_portal:
+
+dashboard_import:
+  package_import_url: github://esphome/example-configs/esphome-web/esp8266.yaml@main
+  import_full_config: true
+
+web_server:
+
+spi:
+  clk_pin: GPIO05
+  mosi_pin: GPIO16
+
+time:
+  - platform: sntp
+    id: sntp_time
+    timezone: "AEST-10"
+    servers:
+     - 0.pool.ntp.org
+     - 1.pool.ntp.org
+     - 2.pool.ntp.org
+display:
+  - platform: max7219digit
+    id: matrix_display
+    cs_pin: GPIO04
+    num_chips: 8
+    intensity: 1
+    scroll_speed: 1ms
+    scroll_delay: 0s
+    scroll_mode: STOP
+    scroll_dwell: 2s
+    lambda: |-
+      if (id(octoprint_printing).state) {
+          switch (id(display_page)) {
+              case 0:
+                  if (!isnan(id(print_time_left).state)) {
+                      float time_left_hours = id(print_time_left).state / 60.0;
+                      it.printf(0, 0, id(default_font), "Hours Left %.1f", time_left_hours);
+                  } else {
+                      it.printf(0, 0, id(default_font), "Time: N/A");
+                  }
+                  break;
+              case 1:
+                  if (!id(print_filename_text).state.empty()) {
+                      it.printf(0, 0, id(default_font), "File: %s", id(print_filename_text).state.c_str());
+                  } else {
+                      it.printf(0, 0, id(default_font), "File: N/A");
+                  }
+                  break;
+              case 2:
+                  if (!isnan(id(print_progress).state)) {
+                      it.printf(0, 0, id(default_font), "Progress: %.0f%%", id(print_progress).state);
+                  } else {
+                      it.printf(0, 0, id(default_font), "Progress: N/A");
+                  }
+                  break;
+              default:
+                  break;
+          }
+      } else {
+          // When not printing, alternate between showing the date, time, and weather
+          if (id(display_page) == 0) {
+              it.strftime(0, 0, id(default_font), "%a   %d-%m-%Y", id(sntp_time).now());
+          } else if (id(display_page) == 1) {
+              it.strftime(0, 0, id(default_font), "%H:%M:%S", id(sntp_time).now());
+          } else if (id(display_page) == 2) {
+              if (!isnan(id(sensor_temperature).state) && !isnan(id(sensor_humidity).state)) {
+                  it.printf(0, 0, id(default_font), "%.0f°C  %.0f%% Humidity", id(sensor_temperature).state, id(sensor_humidity).state);
+              } else {
+                  it.printf(0, 0, id(default_font), "Weather: N/A");
+              }
+          }
+      }
+
+interval:
+  - interval: 1s
+    then:
+      - lambda: |-
+          static int counter = 0;
+          counter++;
+          if (id(octoprint_printing).state) {
+            if (id(display_page) == 1) {
+              int filename_length = id(print_filename_text).state.length();
+              int display_time = (filename_length / 47.0 * 10) + 2;
+              if (counter >= display_time) {
+                counter = 0;
+                id(display_page) = (id(display_page) + 1) % 3;
+              }
+            } else {
+              if (counter >= 4) {
+                counter = 0;
+                id(display_page) = (id(display_page) + 1) % 3;
+              }
+            }
+          } else {
+            if (counter >= 15) {
+              counter = 0;
+              id(display_page) = (id(display_page) + 1) % 3;  // Alternate between date, time, and weather
+            }
+          }
+
+globals:
+  - id: display_page
+    type: int
+    restore_value: no
+    initial_value: '0'
+
+text_sensor:
+  - platform: homeassistant
+    id: print_filename_text
+    entity_id: sensor.octoprint_gcode_filename
+
+sensor:
+  - platform: homeassistant
+    id: print_time_left
+    entity_id: sensor.octoprint_print_time_left
+    filters:
+      - multiply: 0.0166667  # Convert seconds to minutes      
+  - platform: homeassistant
+    id: print_progress
+    entity_id: sensor.octoprint_print_progress
+  - platform: homeassistant
+    id: sensor_temperature
+    entity_id: sensor.irhvac_dht11_temperature
+  - platform: homeassistant
+    id: sensor_humidity
+    entity_id: sensor.irhvac_dht11_humidity
+
+binary_sensor:
+  - platform: homeassistant
+    id: octoprint_printing
+    entity_id: binary_sensor.octoprint_printing_2
+button:
+  - platform: restart
+    name: "Ender Matrix Display Restart"

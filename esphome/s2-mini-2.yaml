@@ -1,0 +1,32 @@
+esphome:
+  name: s2-mini-2
+  friendly_name: s2 mini 2
+
+esp32:
+  board: lolin_s2_mini
+  variant: ESP32S2
+  framework:
+    type: esp-idf
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+
+ota:
+  - platform: esphome
+
+
+wifi:
+  ssid: WiFi-5F80-extend2
+  password: "19491912"
+  power_save_mode: none
+
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+
+
+captive_portal:
+
