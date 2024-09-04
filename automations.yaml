@@ -1,330 +1,429 @@
-- alias: Motioneye - Camera1 - Motion started
-  trigger:
-    platform: webhook
-    webhook_id: motioneye-camera1-started
-  action:
-  - service: input_boolean.turn_on
-    data: {}
-    entity_id: input_boolean.camera1_motion_detected
-  id: 86f9203e62b14aafa4d05038c733a34c
-- alias: Motioneye - Camera1 - Motion ended
-  trigger:
-    platform: webhook
-    webhook_id: motioneye-camera1-ended
-  action:
-    service: input_boolean.turn_off
-    data:
-      entity_id: input_boolean.camera1_motion_detected
-  id: a4c8839d45994620b12bf8c932283907
-- id: '1641316761610'
-  alias: Send a camera snapshot when motion is detected
-  description: ''
-  use_blueprint:
-    path: vorion/send-camera-snapshot-notification-on-motion.yaml
-    input:
-      notification_message: '{{ motion_sensor_name }} detected movement!'
-      motion_sensor: binary_sensor.camera1_motion
-      camera: camera.camera1
-      notify_device: 6c14475bcdbbf2877b650ab507135c3d
-      delay: 5
-      notification_title: Motion detected!
-- id: '1641487502691'
-  alias: chris leave home notification
-  description: Chris leaving home zone notification
-  use_blueprint:
-    path: homeassistant/notify_leaving_zone.yaml
-    input:
-      notify_device: 6c14475bcdbbf2877b650ab507135c3d
-      zone_entity: zone.home
-      person_entity: person.chris
-- id: '1641487542269'
-  alias: chris leave work notification
-  description: Chris leaving work zone notification
-  use_blueprint:
-    path: homeassistant/notify_leaving_zone.yaml
-    input:
-      person_entity: person.chris
-      zone_entity: zone.chris_work
-      notify_device: 6c14475bcdbbf2877b650ab507135c3d
-- id: '1641488264073'
-  alias: chris arriving home notification
-  description: chris arriving home  zone notification
-  use_blueprint:
-    path: Sjorsa/notify-entering-zone.yaml
-    input:
-      person_entity: person.chris
-      zone_entity: zone.home
-      notify_device: 6c14475bcdbbf2877b650ab507135c3d
-- id: '1641488365342'
-  alias: chris arriving work zone notification
-  description: chris arriving work zone notification
-  use_blueprint:
-    path: Sjorsa/notify-entering-zone.yaml
-    input:
-      person_entity: person.chris
-      zone_entity: zone.chris_work
-      notify_device: 6c14475bcdbbf2877b650ab507135c3d
-- id: '1641488405225'
-  alias: mum arriving home  zone notification
-  description: mum arriving home  zone notification
-  use_blueprint:
-    path: Sjorsa/notify-entering-zone.yaml
-    input:
-      person_entity: person.mum
-      zone_entity: zone.home
-      notify_device: 6c14475bcdbbf2877b650ab507135c3d
-- id: '1641488439280'
-  alias: mum leaving home  zone notification
-  description: mum leaving home  zone notification
-  use_blueprint:
-    path: homeassistant/notify_leaving_zone.yaml
-    input:
-      person_entity: person.mum
-      zone_entity: zone.home
-      notify_device: 6c14475bcdbbf2877b650ab507135c3d
-- id: '1641488476039'
-  alias: jamie arriving home  zone notification
-  description: jamie arriving home  zone notification
-  use_blueprint:
-    path: Sjorsa/notify-entering-zone.yaml
-    input:
-      person_entity: person.jamie
-      zone_entity: zone.home
-      notify_device: 6c14475bcdbbf2877b650ab507135c3d
-- id: '1641488505020'
-  alias: jamie leaving home  zone notification
-  description: jamie leaving home  zone notification
-  use_blueprint:
-    path: homeassistant/notify_leaving_zone.yaml
-    input:
-      person_entity: person.jamie
-      zone_entity: zone.home
-      notify_device: 6c14475bcdbbf2877b650ab507135c3d
-- id: '1641488713162'
-  alias: chris camera alarm alert
-  description: ''
-  use_blueprint:
-    path: homeassistant/presence_automation.yaml
-    input:
-      person: person.chris
-      automation:
-        entity_id:
-        - automation.send_a_camera_snapshot_when_motion_is_detected
-        - automation.send_a_camera_snapshot_when_motion_is_detected
-- id: '1641629792757'
-  alias: Cast to Google Hub
-  description: ''
-  use_blueprint:
-    path: kind3r/cast-and-re-cast-a-lovelace-view-to-a-google-hub.yaml
-    input:
-      dashboard: lovelace
-      view: chromecastview
-      player: media_player.chromecastultra4714
-- id: '1642234624146'
-  alias: Notify when phone is charged
+- id: '1667116483950'
+  alias: remote set ac to fan
   description: ''
   trigger:
-  - type: battery_level
-    platform: device
-    device_id: 6c14475bcdbbf2877b650ab507135c3d
-    entity_id: sensor.sm_g975f_battery_level
-    domain: sensor
-    above: 99
-  condition:
-  - type: is_plugged_in
-    condition: device
-    device_id: 6c14475bcdbbf2877b650ab507135c3d
-    entity_id: binary_sensor.sm_g975f_is_charging
-    domain: binary_sensor
-  - condition: time
-    before: '23:59:00'
-  action:
-  - service: media_player.volume_set
-    data:
-      volume_level: 0.7
-      entity_id: media_player.nestmini8620
-  - delay: 00:00:01
-  - service: tts.google_translate_say
-    data:
-      entity_id: media_player.nestmini8620
-      message: your phone is fully charged
-  - delay: 00:00:03
-  - service: media_player.volume_set
-    data:
-      volume_level: 1
-      entity_id: media_player.nestmini8620
-  mode: single
-- id: '1642321486942'
-  alias: turn ac on via nextion
-  description: ''
-  trigger:
-  - platform: state
-    entity_id: switch.power_switch
-    to: 'off'
-    from: 'on'
-  condition: []
-  action:
-  - service: climate.turn_off
-    target:
-      entity_id: climate.aircon
-  mode: single
-- id: '1642322421770'
-  alias: turn ac off via nextion
-  description: ''
-  trigger:
-  - platform: state
-    entity_id: switch.power_switch
-    from: 'off'
-    to: 'on'
-  condition: []
-  action:
-  - service: climate.turn_on
-    target:
-      entity_id: climate.aircon
-  mode: single
-- id: '1642322602397'
-  alias: set ac mode to cool
-  description: ''
-  trigger:
-  - platform: state
-    entity_id: switch.cool_switch
-    from: 'off'
-    to: 'on'
+  - platform: mqtt
+    topic: tele/tasmota/RESULT
+    payload: '{"IrReceived":{"Protocol":"SAMSUNG","Bits":32,"Data":"0xE0E036C9","DataLSB":"0x7076C93","Repeat":0}}'
   condition: []
   action:
   - service: climate.set_hvac_mode
+    data:
+      hvac_mode: heat
+    target:
+      entity_id: climate.aircon
+  mode: single
+- id: '1667116546575'
+  alias: remote set ac to cool
+  description: ''
+  trigger:
+  - platform: mqtt
+    topic: tele/tasmota/RESULT
+    payload: '{"IrReceived":{"Protocol":"SAMSUNG","Bits":32,"Data":"0xE0E028D7","DataLSB":"0x70714EB","Repeat":0}}'
+  condition: []
+  action:
+  - service: climate.set_hvac_mode
+    data:
+      hvac_mode: fan_only
+    target:
+      entity_id: climate.aircon
+  mode: single
+- id: '1667116628798'
+  alias: remote turn lights on
+  description: ''
+  trigger:
+  - platform: mqtt
+    topic: tele/tasmota/RESULT
+    payload: '{"IrReceived":{"Protocol":"SAMSUNG","Bits":32,"Data":"0xE0E0A857","DataLSB":"0x70715EA","Repeat":0}}'
+  condition: []
+  action:
+  - service: light.turn_on
+    data: {}
+    target:
+      entity_id: light.chris_lights
+  mode: single
+- id: '1667116659094'
+  alias: remote turn lights off
+  description: ''
+  trigger:
+  - platform: mqtt
+    topic: tele/tasmota/RESULT
+    payload: '{"IrReceived":{"Protocol":"SAMSUNG","Bits":32,"Data":"0xE0E06897","DataLSB":"0x70716E9","Repeat":0}}'
+  condition: []
+  action:
+  - service: light.turn_off
+    data: {}
+    target:
+      entity_id: light.chris_lights
+  mode: single
+- id: '1713260422464'
+  alias: remote Everything off
+  description: use pip button on bottom of remote to turn everything off for the day
+  trigger:
+  - platform: mqtt
+    topic: tele/tasmota/RESULT
+    payload: '{"IrReceived":{"Protocol":"SAMSUNG","Bits":32,"Data":"0xE0E004FB","DataLSB":"0x70720DF","Repeat":0}}'
+  condition: []
+  action:
+  - service: switch.turn_off
+    target:
+      entity_id: switch.my_computer
+    data: {}
+  - service: light.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id: light.chris_lights
+  - service: climate.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id: climate.aircon
+  mode: single
+- id: '1713260562060'
+  alias: remote everything on
+  description: use swap button on bottom of remote to turn everything on
+  trigger:
+  - platform: mqtt
+    topic: tele/tasmota/RESULT
+    payload: '{"IrReceived":{"Protocol":"SAMSUNG","Bits":32,"Data":"0xE0E0847B","DataLSB":"0x70721DE","Repeat":0}}'
+  condition: []
+  action:
+  - service: switch.turn_on
+    target:
+      entity_id:
+      - switch.my_computer
+    data: {}
+  - service: light.turn_on
+    target:
+      entity_id:
+      - light.chris_lights
+    data: {}
+  - service: climate.set_hvac_mode
+    metadata: {}
     data:
       hvac_mode: cool
     target:
       entity_id: climate.aircon
-  - service: switch.turn_off
-    target:
-      entity_id:
-      - switch.fan_switch
-      - switch.dry_switch
-      - switch.heat_switch
   mode: single
-- id: '1642322819065'
-  alias: set ac mode to fan only
+- id: '1716438168525'
+  alias: speedtest every 30 mins
+  description: ''
+  trigger:
+  - platform: time_pattern
+    minutes: '1'
+  - platform: time_pattern
+    minutes: '31'
+  condition: []
+  action:
+  - service: hassio.addon_start
+    metadata: {}
+    data:
+      addon: 6b87c29e_speedtest_addon
+  mode: single
+- id: '1716532895936'
+  alias: Everything on when i get home
+  description: ''
+  trigger:
+  - platform: zone
+    entity_id: device_tracker.sm_s911b
+    zone: zone.home
+    event: enter
+  condition: []
+  action:
+  - service: light.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: light.chris_lights
+  - service: switch.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: switch.my_computer
+  - service: climate.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: climate.aircon
+  mode: single
+- id: '1716532930864'
+  alias: Everything off when i get home
+  description: ''
+  trigger:
+  - platform: zone
+    entity_id: device_tracker.sm_s911b
+    zone: zone.home
+    event: leave
+  condition: []
+  action:
+  - service: automation.trigger
+    metadata: {}
+    data:
+      skip_condition: true
+    target:
+      entity_id: automation.remote_everything_off
+  mode: single
+- id: '1716562597381'
+  alias: Retry speedtest every 5 mins
   description: ''
   trigger:
   - platform: state
-    entity_id: switch.fan_switch
-    from: 'off'
-    to: 'on'
+    entity_id:
+    - sensor.speedtest_download
+    from:
+    to: unknown
+    for:
+      hours: 0
+      minutes: 10
+      seconds: 0
+  condition: []
+  action:
+  - service: hassio.addon_start
+    metadata: {}
+    data:
+      addon: 6b87c29e_speedtest_addon
+  mode: single
+- id: '1716887001240'
+  alias: app triggered fan mode for ac
+  description: ''
+  trigger: []
   condition: []
   action:
   - service: climate.set_hvac_mode
-    target:
-      entity_id: climate.aircon
+    metadata: {}
     data:
       hvac_mode: fan_only
-  - service: switch.turn_off
     target:
-      entity_id:
-      - switch.cool_switch
-      - switch.heat_switch
-      - switch.dry_switch
+      entity_id: climate.aircon
   mode: single
-- id: '1642322952564'
-  alias: set ac mode to heat
+- id: '1716887064732'
+  alias: app triggered cool mode for ac
   description: ''
-  trigger:
-  - platform: state
-    entity_id: switch.heat_switch
-    from: 'off'
-    to: 'on'
+  trigger: []
   condition: []
   action:
   - service: climate.set_hvac_mode
+    metadata: {}
+    data:
+      hvac_mode: cool
     target:
       entity_id: climate.aircon
-    data:
-      hvac_mode: heat
-  - service: switch.turn_off
-    target:
-      entity_id:
-      - switch.cool_switch
-      - switch.fan_switch
-      - switch.dry_switch
   mode: single
-- id: '1642323034806'
-  alias: set ac mode to dry
+- id: '1716893059115'
+  alias: test
+  description: ''
+  trigger: []
+  condition: []
+  action: []
+  mode: single
+- id: '1717057297635'
+  alias: retest speed of wan
   description: ''
   trigger:
   - platform: state
-    entity_id: switch.dry_switch
-    from: 'off'
+    entity_id:
+    - sensor.speedtest_download
+    from:
+    to: unavailable
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+  condition: []
+  action:
+  - service: hassio.addon_start
+    metadata: {}
+    data:
+      addon: 6b87c29e_speedtest_addon
+  mode: single
+- id: '1717060295550'
+  alias: notify when wan goes down
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.dir_1750_wan_status
+    from:
+    to: 'off'
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+  condition: []
+  action:
+  - metadata: {}
+    data:
+      message: DIR-1750 WAN Has been Down For 5+ minutes
+    action: notify.mobile_app_s23_chris
+  - action: light.turn_on
+    metadata: {}
+    data:
+      effect: blink_red
+      brightness_pct: 100
+    target:
+      entity_id: light.rgbstrip1
+  mode: single
+- id: '1717060349586'
+  alias: Wan online notification
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.dir_1750_wan_status
+    from:
     to: 'on'
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 0
   condition: []
   action:
-  - service: climate.set_hvac_mode
-    target:
-      entity_id: climate.aircon
+  - service: notify.mobile_app_s23_chris
+    metadata: {}
     data:
-      hvac_mode: dry
-  - service: switch.turn_off
-    target:
-      entity_id:
-      - switch.cool_switch
-      - switch.heat_switch
-      - switch.fan_switch
+      message: DIR-1750 WAN Has Come Online
   mode: single
-- id: '1642327481346'
-  alias: set ac temp from nextion
+- id: remind_unplug_phone_90
+  alias: Remind to Unplug Phone at 90%
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.sm_s911b_battery_level
+    above: 89
+    below: 91
+  condition:
+  - condition: state
+    entity_id: binary_sensor.sm_s911b_is_charging
+    state: 'on'
+  action:
+  - service: notify.mobile_app_s23_chris
+    data:
+      data:
+        image: http://homeassistant.local:8123/local/stopcharging.jpg
+      title: Battery Health Message
+      message: Please Unplung your phone, it has reached 90% charge
+- id: Hass Startup Notification
+  alias: Hass Startup Notification
+  trigger:
+  - platform: homeassistant
+    event: start
+  action:
+    service: notify.mobile_app_s23_chris
+    data:
+      title: Warning
+      message: Hass started
+- id: '1717903505286'
+  alias: restart Satellite Devices once a week
   description: ''
   trigger:
   - platform: state
-    entity_id: sensor.tslider
+    entity_id: []
+  condition:
+  - condition: time
+    weekday:
+    - sun
+    after: 00:01:00
+  action:
+  - metadata: {}
+    data:
+      topic: cmnd/tasmota/irhvac/Restart
+      payload: '1'
+    action: mqtt.publish
+  - action: button.press
+    metadata: {}
+    data: {}
+    target:
+      entity_id: button.ender_matrix_display_ender_matrix_display_restart
+  mode: single
+- id: '1720617300820'
+  alias: Turn printer power off after print finishes late at night
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - sensor.octoprint_print_status
+    from: Printing
+    to: Operational
+  condition:
+  - condition: time
+    after: 00:01:00
+    before: 06:00:00
+  action:
+  - service: switch.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id: switch.pc191ha_switch_1
+  mode: single
+- id: '1724854367299'
+  alias: next media with remote
+  description: take ir recoeved for right arrow and send keyboard next media button
+    via agent
+  trigger:
+  - platform: mqtt
+    topic: tele/tasmota/RESULT
+    payload: ' {"IrReceived":{"Protocol":"SAMSUNG","Bits":32,"Data":"0xE0E046B9","DataLSB":"0x707629D","Repeat":0}}'
   condition: []
   action:
-  - service: climate.set_temperature
-    target:
-      entity_id: climate.aircon
-    data:
-      temperature: '{{ states("sensor.tslider") }}'
+  - device_id: 9f5287d27a3dc9a363a39de76f41cf9b
+    domain: button
+    entity_id: f62205c3f3f9b3e5427d0f50921304b8
+    type: press
   mode: single
-- id: '1642337119955'
-  alias: set nextion cooling parameter
-  description: ''
+- id: '1724854653613'
+  alias: left arrow remote to last media button
+  description: take ir recoeved for LEFT arrow and send keyboard BACK media button
+    via agent
   trigger:
-  - platform: device
-    device_id: 60ba643773f8d23b0fb1422d6618ac73
-    domain: device_tracker
-    entity_id: device_tracker.espressif_82_a7_0c
-    type: enters
-    zone: zone.home
-  condition:
-  - condition: state
-    entity_id: climate.aircon
-    state: cooling
-    attribute: hvac_action
+  - platform: mqtt
+    topic: tele/tasmota/RESULT
+    payload: '{"IrReceived":{"Protocol":"SAMSUNG","Bits":32,"Data":"0xE0E0A659","DataLSB":"0x707659A","Repeat":0}}'
+  condition: []
   action:
-  - service: switch.turn_on
-    target:
-      entity_id:
-      - switch.power_switch
-      - switch.cool_switch
-      device_id: 60ba643773f8d23b0fb1422d6618ac73
+  - device_id: 9f5287d27a3dc9a363a39de76f41cf9b
+    domain: button
+    entity_id: 85f2845183aae5bb2efeb86dd701a62d
+    type: press
   mode: single
-- id: '1642337522192'
-  alias: set nextion fan parameter
-  description: ''
+- id: '1724854979095'
+  alias: up arrow skip forward
+  description: take ir recoeved for up arrow and send keyboard right arrow via agent
   trigger:
-  - platform: device
-    device_id: 60ba643773f8d23b0fb1422d6618ac73
-    domain: device_tracker
-    entity_id: device_tracker.espressif_82_a7_0c
-    type: enters
-    zone: zone.home
-  condition:
-  - condition: state
-    entity_id: climate.aircon
-    state: fan
-    attribute: hvac_action
+  - platform: mqtt
+    topic: tele/tasmota/RESULT
+    payload: ' {"IrReceived":{"Protocol":"SAMSUNG","Bits":32,"Data":"0xE0E006F9","DataLSB":"0x707609F","Repeat":0}}'
+  condition: []
   action:
-  - service: switch.turn_on
-    target:
-      entity_id: switch.power_switch
-      device_id: 60ba643773f8d23b0fb1422d6618ac73
+  - device_id: 9f5287d27a3dc9a363a39de76f41cf9b
+    domain: button
+    entity_id: ee17d35b1cbf93dbee942018928091a1
+    type: press
+  mode: single
+- id: '1724855019817'
+  alias: 'downremote = left keyb '
+  description: take ir recoeved for down arrow and send keyboard left arrow via agent
+  trigger:
+  - platform: mqtt
+    topic: tele/tasmota/RESULT
+    payload: '{"IrReceived":{"Protocol":"SAMSUNG","Bits":32,"Data":"0xE0E08679","DataLSB":"0x707619E","Repeat":0}}'
+  condition: []
+  action:
+  - device_id: 9f5287d27a3dc9a363a39de76f41cf9b
+    domain: button
+    entity_id: 69cbafc933789ca6e636d8879d76d28e
+    type: press
+  mode: single
+- id: '1724855138335'
+  alias: exit remote button press f keyboard
+  description: take ir recoeved for exit and send keyboard f via agent
+  trigger:
+  - platform: mqtt
+    topic: tele/tasmota/RESULT
+    payload: '{"IrReceived":{"Protocol":"SAMSUNG","Bits":32,"Data":"0xE0E0B44B","DataLSB":"0x7072DD2","Repeat":0}}'
+  condition: []
+  action:
+  - device_id: 9f5287d27a3dc9a363a39de76f41cf9b
+    domain: button
+    entity_id: 10e8333e0c09772c6c39f77115490cdb
+    type: press
   mode: single
