@@ -1,0 +1,309 @@
+- spec:
+    name: execute_services
+    description: Use this function to execute service of devices in Home Assistant.
+    parameters:
+      type: object
+      properties:
+        list:
+          type: array
+          items:
+            type: object
+            properties:
+              domain:
+                type: string
+                description: The domain of the service
+              service:
+                type: string
+                description: The service to be called
+              service_data:
+                type: object
+                description: The service data object to indicate what to control.
+                properties:
+                  entity_id:
+                    type: string
+                    description: The entity_id retrieved from available devices. It
+                      must start with domain, followed by dot character.
+                required:
+                - entity_id
+            required:
+            - domain
+            - service
+            - service_data
+  function:
+    type: native
+    name: execute_service
+
+
+
+- spec:
+    name: send_message_to_s23
+    description: Use this function to send message to Line.
+    parameters:
+      type: object
+      properties:
+        message:
+          type: string
+          description: message you want to send
+      required:
+      - message
+  function:
+    type: script
+    sequence:
+    - service: notify.mobile_app_s23_chris
+      data:
+        message: "{{ message }}"
+
+        
+
+
+
+
+- spec:
+    name: get_history
+    description: Retrieve historical data of specified entities.
+    parameters:
+      type: object
+      properties:
+        entity_ids:
+          type: array
+          items:
+            type: string
+            description: The entity id to filter.
+        start_time:
+          type: string
+          description: Start of the history period in "%Y-%m-%dT%H:%M:%S%z".
+        end_time:
+          type: string
+          description: End of the history period in "%Y-%m-%dT%H:%M:%S%z".
+      required:
+      - entity_ids
+  function:
+    type: composite
+    sequence:
+      - type: native
+        name: get_history
+        response_variable: history_result
+      - type: template
+        value_template: >-
+          {% set ns = namespace(result = [], list = []) %}
+          {% for item_list in history_result %}
+              {% set ns.list = [] %}
+              {% for item in item_list %}
+                  {% set last_changed = item.last_changed | as_timestamp | timestamp_local if item.last_changed else None %}
+                  {% set new_item = dict(item, last_changed=last_changed) %}
+                  {% set ns.list = ns.list + [new_item] %}
+              {% endfor %}
+              {% set ns.result = ns.result + [ns.list] %}
+          {% endfor %}
+          {{ ns.result }}
+- spec:
+    name: query_histories_from_db
+    description: >-
+      Use this function to query histories from Home Assistant SQLite database.
+      Example:
+        Question: When did bedroom light turn on?
+        Answer: SELECT datetime(s.last_updated_ts, 'unixepoch', 'localtime') last_updated_ts FROM states s INNER JOIN states_meta sm ON s.metadata_id = sm.metadata_id INNER JOIN states old ON s.old_state_id = old.state_id WHERE sm.entity_id = 'light.bedroom' AND s.state = 'on' AND s.state != old.state ORDER BY s.last_updated_ts DESC LIMIT 1
+        Question: Was livingroom light on at 9 am?
+        Answer: SELECT datetime(s.last_updated_ts, 'unixepoch', 'localtime') last_updated, s.state FROM states s INNER JOIN states_meta sm ON s.metadata_id = sm.metadata_id INNER JOIN states old ON s.old_state_id = old.state_id WHERE sm.entity_id = 'switch.livingroom' AND s.state != old.state AND datetime(s.last_updated_ts, 'unixepoch', 'localtime') < '2023-11-17 08:00:00' ORDER BY s.last_updated_ts DESC LIMIT 1
+    parameters:
+      type: object
+      properties:
+        query:
+          type: string
+          description: A fully formed SQL query.
+  function:
+    type: sqlite
+  
+- spec:
+    name: request_movie
+    description: Use this function to request a movie via Ombi.
+    parameters:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The name of the movie to request
+      required:
+      - name
+  function:
+    type: script
+    sequence:
+    - service: ombi.submit_movie_request
+      data:
+        name: '{{name}}'
+
+
+
+
+
+- spec:
+    name: request_tv_show
+    description: Use this function to request a TV show via Ombi.
+    parameters:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The name of the TV show to request
+        season:
+          type: string
+          description: The season selection option (latest or all)
+          enum:
+            - latest
+            - all
+      required:
+      - name
+      - season
+  function:
+    type: script
+    sequence:
+    - choose:
+        - conditions: "{{ season == 'latest' }}"
+          sequence:
+            - service: ombi.submit_tv_request
+              data:
+                name: '{{ name }}'
+                season: latest
+        - conditions: "{{ season == 'all' }}"
+          sequence:
+            - service: ombi.submit_tv_request
+              data:
+                name: '{{ name }}'
+                season: all
+
+
+
+- spec:
+    name: add_automation
+    description: Use this function to add an automation in Home Assistant.
+    parameters:
+      type: object
+      properties:
+        automation_config:
+          type: string
+          description: A configuration for automation in a valid yaml format. Next line character should be \n. Use devices from the list.
+      required:
+      - automation_config
+  function:
+    type: native
+    name: add_automation
+
+
+
+- spec:
+    name: get_all_torrents
+    description: Use this function to get a list of all torrents from qBittorrent.
+    parameters:
+      type: object
+      properties:
+        torrent_filter:
+          type: string
+          enum:
+            - all
+          description: Filter for torrents.
+      required:
+        - torrent_filter
+  function:
+    type: script
+    sequence:
+      - service: qbittorrent.get_all_torrents
+        data:
+          torrent_filter: 'all'
+        response_variable: _function_result
+
+- spec:
+    name: send_email_notification
+    description: Use this function to send an email notification.
+    parameters:
+      type: object
+      properties:
+        message:
+          type: string
+          description: The message you want to send in the email.
+        title:
+          type: string
+          description: The title of the email.
+        target:
+          type: string
+          description: The target email address.
+      required:
+        - message
+        - title
+        - target
+  function:
+    type: script
+    sequence:
+      - service: notify.ssjrocks_gmail_com
+        data:
+          message: "{{ message }}"
+          title: "{{ title }}"
+          target: "{{ target }}"
+
+- spec:
+    name: get_attributes
+    description: Get attributes of any home assistant entity
+    parameters:
+      type: object
+      properties:
+        entity_id:
+          type: string
+          description: entity_id
+      required:
+      - entity_id
+  function:
+    type: template
+    value_template: "{{states[entity_id]}}"
+
+
+- spec:
+    name: run_curl_command
+    description: Execute a curl command from Home Assistant.
+    parameters:
+      type: object
+      properties:
+        url:
+          type: string
+          description: The URL to make the curl request to.
+        method:
+          type: string
+          description: The HTTP method to use (GET, POST, etc.).
+          enum: [GET, POST, PUT, DELETE]
+        headers:
+          type: object
+          description: Headers to include in the curl request.
+          additionalProperties:
+            type: string
+        data:
+          type: string
+          description: Data to send in the curl request (for POST/PUT).
+      required:
+      - url
+      - method
+  function:
+    type: script
+    sequence:
+    - service: shell_command.run_curl
+      data_template:
+        url: "{{url}}"
+        method: "{{method}}"
+        headers: "{{headers if headers is defined else {}}}"
+        data: "{{data}}"
+
+
+- spec:
+    name: run_command
+    description: Execute any command on the host and capture output.
+    parameters:
+      type: object
+      properties:
+        command:
+          type: string
+          description: The command to execute.
+      required:
+      - command
+  function:
+    type: script
+    sequence:
+    - service: script.dynamic_command_with_output
+      data_template:
+        command: "{{ command }}"

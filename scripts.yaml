@@ -1,0 +1,20 @@
+teast:
+  alias: New Script
+  use_blueprint:
+    path: homeassistant/confirmable_notification.yaml
+    input:
+      notify_device: e5759748e89ff829a7bece7eca1a20f7
+      title: test
+      message: ye or na
+      dismiss_action:
+        - service: light.turn_on
+          metadata: {}
+          data: {}
+          target:
+            entity_id: light.chris_lights
+      confirm_action:
+        - service: light.turn_off
+          metadata: {}
+          data: {}
+          target:
+            entity_id: light.chris_lights
