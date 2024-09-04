@@ -1,146 +1,84 @@
-# Configure a default setup of Home Assistant (frontend, api, etc)
+# Loads default set of integrations. Do not remove.
 default_config:
 
-# Text to speech
-tts:
-  - platform: google_translate
-#
-group: !include groups.yaml
+# Load frontend themes from the themes folder
+frontend:
+  themes: !include_dir_merge_named themes
 
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
-frontend:
-  themes: !include_dir_merge_named themes
+homeassistant:
+  customize:
+    zone.home:
+      radius: 200
+  whitelist_external_dirs:
+    - /share
+#recorder:
+#   db_url: mysql://homeassistant:spl1nt3r@core-mariadb/homeassistant?charset=utf8mb4
+# mysql://user:password@SERVER_IP/DB_NAME?charset=utf8mb4
 
-rest:
-  - resource: http://192.168.1.117:61208/api/3/all
-    sensor:
-      - name: network
-        value_template: '{{ value_json[0] | default }}'
-        json_attributes_path: "$.network.1"
-        json_attributes:
-          - interface_name
-          - time_since_update
-          - rx
-          - tx
-          - cx
-    verify_ssl: false
-    timeout: 30
-    scan_interval: 3
+recorder:
+  db_url: *******
+influxdb:
+  host: a0d7b954-influxdb
+  port: 8086
+  database: *****
+  username: *****
+  password: *****
+  max_retries: 3
+  default_measurement: state
+media_source:
+switch:
+  - platform: wake_on_lan
+    mac: B4-2E-99-88-73-67
+    name: "My Computer"
+    host: 192.168.1.105
+    turn_off:
+      service: hassio.addon_stdin
+      data:
+        addon: core_rpc_shutdown
+        input: Spl1nt
 
 sensor:
-  - platform: template
-    sensors:
-      hassio_download_speed:
-        value_template: >-
-                {% set receive = state_attr('sensor.network', 'rx') %}
-                {% set time_since = state_attr('sensor.network', 'time_since_update') %}
-                {% if (receive != None ) and (time_since != None ) %}
-                  {{ ((receive | int) / (time_since | int) * 8 / 1000000) | round (2) }}
-                {% endif %}
-        availability_template: >-
-                {{ states("sensor.network") not in ["unknown", "unavailable", "none"] }}
-        unit_of_measurement: 'MB/s'
-  - platform: template
-    sensors:
-      hassio_upload_speed:
-        value_template: >-
-                {% set transmit = state_attr('sensor.network', 'tx') %}
-                {% set time_since = state_attr('sensor.network', 'time_since_update') %}
-                {% if (transmit != None ) and (time_since != None ) %}
-                  {{ ((transmit | int) / (time_since | int) * 8 / 1000000) | round (2) }}
-                {% endif %}
-        availability_template: >-
-                {{ states("sensor.network") not in ["unknown", "unavailable", "none"] }}
-        unit_of_measurement: 'MB/s'
-  - platform: template
-    sensors:
-      hassio_total_speed:
-        value_template: >-
-                {% set total = state_attr('sensor.network', 'cx') %}
-                {% set time_since = state_attr('sensor.network', 'time_since_update') %}
-                {% if (total != None ) and (time_since != None ) %}
-                  {{ ((total | int) / (time_since | int) * 8 / 1000000) | round (2) }}
-                {% endif %}
-        availability_template: >-
-                {{ states("sensor.network") not in ["unknown", "unavailable", "none"] }}
-        unit_of_measurement: 'MB/s'
-
   - platform: openhardwaremonitor
     host: 192.168.1.105
-
-utility_meter:
-  daily_energy:
-    source: sensor.electricity_total
-    name: Daily Energy
-    cycle: daily
-
-  monthly_energy:
-    source: sensor.electricity_total
-    name: Monthly Energy
-    cycle: monthly
-
-# Example configuration.yaml entry.
-# Shows device_tracker.demo_paulus on a map.
-camera:
-  name: chris
-  platform: generic
-  still_image_url: https://maps.googleapis.com/maps/api/staticmap?center={{ state_attr('device_tracker.smg975f', 'latitude') }},{{ state_attr('device_tracker.smg975f', 'longitude') }}&zoom=16&size=500x500&maptype=roadmap&layer=t&markers=color:blue%7Clabel:Chris%7C{{ state_attr('device_tracker.smg975f', 'latitude') }},{{ state_attr('device_tracker.smg975f', 'longitude') }}&key=AIzaSyCdWE1FTtUm6UCEB1TUV1Ex74SF3ZAdn3w
-  limit_refetch_to_url_change: true
-
-template:
-  - sensor:
-      - name: "dollarstoday"
-     #   unit_of_measurement: "$"
-        state: >
-                 ${{(states('sensor.Daily_Energy')|float*0.20178 )| round(2)}}
-  - sensor:
-      - name: "dollarsmonth"
-     #   unit_of_measurement: "$"
-        state: >
-                 ${{(states('sensor.Monthly_Energy')|float*0.20178 )| round(2)}}
-  - sensor:
-      - name: "dollarstodaydig"
-     #   unit_of_measurement: "$"
-        state: >
-                 {{(states('sensor.Daily_Energy')|float*0.20178 )| round(2)}}
-
-notify:
-  - name: ga_broadcast
-    platform: rest
-    resource: http://localhost:5000/broadcast_message
-  - name: ga_command
-    platform: rest
-    resource: http://localhost:5000/command
-
-input_boolean:
-  camera1_motion_detected:
-    name: Camera1 - Motion detected
-    icon: mdi:eye
-
-binary_sensor:
+  - platform: openhardwaremonitor
+    host: 192.168.1.36
   - platform: template
     sensors:
-      camera1_motion:
-        friendly_name: "Camera - Movement"
-        device_class: motion
-        value_template: "{{ is_state('input_boolean.camera1_motion_detected', 'on') }}"
+      dir_1750_uptime_days:
+        friendly_name: "dir_1750 Uptime in Days"
+        unit_of_measurement: "days"
+        value_template: "{{ (states('sensor.dir_1750_uptime') | float / 86400) | round(0) }}"
+      netgear_dgn1000_router_uptime_days:
+        friendly_name: "netgear_dgn1000_router_uptime in Days"
+        unit_of_measurement: "days"
+        value_template: "{{ (states('sensor.netgear_dgn1000_router_uptime') | float / 86400) | round(0) }}"
+      archer_vr1600v_uptime_days:
+        friendly_name: "archer_vr1600v_uptime in Days"
+        unit_of_measurement: "days"
+        value_template: "{{ (states('sensor.archer_vr1600v_uptime') | float / 86400) | round(0) }}"
 
+
+mqtt:
+  sensor:
+    - name: "Octoprint Gcode Filename"
+      state_topic: "octoPrint/hass/printing"
+      value_template: "{{ value_json.job.file.display }}"
 climate:
   - platform: tasmota_irhvac
     name: aircon
-    command_topic: "cmnd/tasmota_8C3A30/irhvac"
-    state_topic: "tele/tasmota_8C3A30/RESULT"
-    temperature_sensor: sensor.glances_ambient_temperature  # optional this sensor is used to display current temp on the AC card
+    command_topic: "cmnd/tasmota/irhvac"
+    state_topic: "tele/tasmota/RESULT"
+    temperature_sensor: sensor.irhvac_dht11_temperature #optional this sensor is used to display current temp on the AC card
     protocol: "GREE"
-    min_temp: 16  #   optional - default 16 int value
-    max_temp: 30  #   optional - default 32 int value
-    target_temp: 26  #   optional - default 26 int value
-    initial_operation_mode: "off"  # optional - default "off" string value
-   #   away_temp: 24  #   optional - default 24 int value
-    precision: 1.0  #   optional - default 1.0 float value
-
+    min_temp: 16 #optional - default 16 int value
+    max_temp: 30 #optional - default 32 int value
+    target_temp: 20 #optional - default 26 int value
+    initial_operation_mode: "off" # optional - default "off" string value
+    away_temp: 20 #optional - default 24 int value
+    precision: 1.0 #optional - default 1.0 float value
     supported_modes:
       - heat
       - cool
@@ -150,122 +88,55 @@ climate:
       - "off" #Turns the AC off - Should be quoted and should be always included here
     supported_fan_speeds:
       #- low
+      - min
       - max
       - medium
-     #  - high
-     # - middle
+      # - high
+      #- middle
       #- focus
       #- diffuse
-      - min
+
       - auto
     supported_swing_list:
       - "off"
       - vertical #up to down
-     # - horizontal # Left to right - remove if your AC does not support it
-     # - both # remove if your AC does not support horizontal
+      #- horizontal # Left to right - remove if your AC does not support it
+      #- both # remove if your AC does not support horizontal
+ #   default_light_mode: "On"  
+    hvac_model: "1" # string value
+    celsius_mode: "On" #optional - default "On" string value - you can remove it if you use celsius
 
-    hvac_model: "1"   # string value
-    celsius_mode: "On"   #   optional - default "On" string value - you can remove it if you use celsius
-    default_light_mode: "On"   #   optional - default "Off" string value
-    default_beep_mode: "Off"
 
-switch:
-  - platform: template
-    switches:
-      acdisplay:
-        friendly_name: "acdisplay"
-        value_template: "{{ is_state_attr('climate.aircon', 'light', 'on') }}"
-        turn_on:
-          service: tasmota_irhvac.set_light
-          data:
-            entity_id: climate.aircon
-            light: 'on'
-        turn_off:
-          service: tasmota_irhvac.set_light
-          data:
-            entity_id: climate.aircon
-            light: 'off'
-
-  - platform: template
-    switches:
-      acbeep:
-        friendly_name: "acbeep"
-        value_template: "{{ is_state_attr('climate.aircon', 'beep', 'on') }}"
-        turn_on:
-          service: tasmota_irhvac.set_beep
-          data:
-            entity_id: climate.aircon
-            beep: 'on'
-        turn_off:
-          service: tasmota_irhvac.set_beep
-          data:
-            entity_id: climate.aircon
-            beep: 'off'
-
-  - platform: template
-    switches:
-      chrislight:
-
-        turn_on:
-         - service: switch.turn_on
-           target:
-            entity_id: switch.chrislight
-  #       - service: input_boolean.toggle
-   #        data:
-  #          entity_id: input_boolean.chrislight
-         - service: notify.ga_command
-           data:
-            message: "Turn my light on"
-
-        turn_off:
-         - service: switch.turn_off
-           target:
-            entity_id: switch.chrislight
-  #       - service: input_boolean.toggle
- #          data:
-  #          entity_id: input_boolean.chrislight
-         - service: notify.ga_command
-           data:
-            message: "Turn my light off"
-
-image_processing:
-  - platform: deepstack_face
-    ip_address: 192.168.1.105
-    port: 5000
-  #  api_key: mysecretkey
-    timeout: 5
-    detect_only: False
-    save_file_folder: /config/snapshots/
-    save_timestamped_file: true
-    save_faces: true
-    save_faces_folder: /config/faces/
-    show_boxes: true
-    source:
-      - entity_id: camera.local_file
-        name: face_counter
-light:
-  - platform: group
-    name: Chris's Lights
-    entities:
-      - light.genio_1
-      - light.genio_2
-
+device_tracker:
+  - platform: bluetooth_le_tracker
+    interval_seconds: 60
+    consider_home: 240
+    new_device_defaults:
+      track_new_devices: true
+ 
       
-rest_command:
-  assistant_broadcast:
-    url: http://localhost:3000/assistant
-    method: POST
-    content_type: 'application/json'
-    payload: '{"command":"{{ command }}", "user":"username", "broadcast":true}'
+ombi:
+  host: 192.168.1.36
+  api_key: *****
+  username: admin
+  port: 5000
+  urlbase: /
+  ssl: false
+shell_command:
+  run_curl: >
+    curl -X {{ method }}
+    {% if headers is defined and headers|length > 0 %}
+    {% for key, value in headers.items() %}
+    -H "{{ key }}: {{ value }}"
+    {% endfor %}
+    {% endif %}
+    {% if data is defined and data != '' %}
+    -d '{{ data }}'
+    {% endif %}
+    '{{ url }}'
 
-  assistant_converse:
-    url: http://localhost:3000/assistant
-    method: POST
-    content_type: 'application/json'
-    payload: '{"command":"{{ command }}", "user":"username", "converse":true}'
-
-  assistant_relay:
-    url: http://localhost:3000/assistant
-    method: POST
-    content_type: 'application/json'
-    payload: '{"command":"{{ command }}", "user":"username"}'
+  execute_command: '/bin/bash /config/scripts/execute_command.sh "{{ command }}"'
+input_text:
+  shell_command_response:
+    name: Shell Command Response
+    initial: "Waiting for command..."
