@@ -14,9 +14,7 @@ homeassistant:
       radius: 200
   whitelist_external_dirs:
     - /share
-#recorder:
-#   db_url: mysql://homeassistant:spl1nt3r@core-mariadb/homeassistant?charset=utf8mb4
-# mysql://user:password@SERVER_IP/DB_NAME?charset=utf8mb4
+
 
 recorder:
   db_url: *******
