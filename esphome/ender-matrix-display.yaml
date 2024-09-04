@@ -36,7 +36,7 @@ ota:
 # Allow provisioning Wi-Fi via serial
 wifi:
   ssid: WiFi-5F80-extend2
-  password: "19491912"
+  password: "*******"
   power_save_mode: none
   manual_ip:
     static_ip: 192.168.1.250
